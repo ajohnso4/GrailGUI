@@ -1,43 +1,42 @@
 #define _USE_MATH_DEFINES
 #include "CAD/Curve.hh"
-#include "glad/glad.h"
-#include "opengl/Shader.hh"
-#include "opengl/GLWin.hh"
-#include "opengl/Canvas.hh"
+
 #include <cmath>
+
+#include "glad/glad.h"
+#include "opengl/Canvas.hh"
+#include "opengl/GLWin.hh"
+#include "opengl/Shader.hh"
 
 using namespace std;
 
-void Curve::add(const Vec3D& p){
-  points.push_back(p);
-}
+void Curve::add(const Vec3D& p) { points.push_back(p); }
 
-void Curve::compute(){
+void Curve::compute() {
   p = normalize(point);
-  u = cross(center, p); //get perpendicular vector
-  u = normalize(u); //normalize to get unit vector
-  v = cross(u,p); //get perpendicular vector
-  v = normalize(v); //normalize to get unit vector
+  u = cross(center, p);  // get perpendicular vector
+  u = normalize(u);      // normalize to get unit vector
+  v = cross(u, p);       // get perpendicular vector
+  v = normalize(v);      // normalize to get unit vector
 }
 
-Vec3D Curve::getPoint(double step){
+Vec3D Curve::getPoint(double step) {
   double t = M_PI * 2 * step;
   compute();
-  return center + (u*(radius*cos(t))) + (v*(radius*sin(t)));
+  return center + (u * (radius * cos(t))) + (v * (radius * sin(t)));
 }
 
-
-void Curve::getPoints(){
-  for(double i=0; i<=0.5; i+=0.1){
-     // cout<< this->getPoint(i) << endl;
-      points.push_back(this->getPoint(i));
+void Curve::getPoints() {
+  for (double i = 0; i <= 0.5; i += 0.1) {
+    // cout<< this->getPoint(i) << endl;
+    points.push_back(this->getPoint(i));
   }
 }
-//unwrap points to be a 1d array for drawing
-std::vector<float> unwrap(std::vector<Vec3D> x){
+// unwrap points to be a 1d array for drawing
+std::vector<float> unwrap(std::vector<Vec3D> x) {
   std::vector<float> temp;
-  temp.reserve(x.size()*3);
-  for (int i=0; i<x.size(); i++){
+  temp.reserve(x.size() * 3);
+  for (int i = 0; i < x.size(); i++) {
     temp.push_back(x[i].x);
     temp.push_back(x[i].y);
     temp.push_back(x[i].z);
@@ -45,39 +44,39 @@ std::vector<float> unwrap(std::vector<Vec3D> x){
   return temp;
 }
 
-void Curve::init(){
-  //create VAO to hold shapes
+void Curve::init() {
+  // create VAO to hold shapes
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
-  
-  //create VBO to hold vertex points
+
+  // create VBO to hold vertex points
   drawingPoints = unwrap(points);
+  numPoints = drawingPoints.size()/elemPerVert;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), &drawingPoints[0], GL_STATIC_DRAW);
-
-  //describe in shaders
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 18 * sizeof(float), (void*)0);
+  glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), &drawingPoints[0],
+               GL_STATIC_DRAW);
+  
+  glVertexAttribPointer(0, elemPerVert, GL_FLOAT, GL_FALSE, 0, (void*)0);
 }
 
-void Curve::render(){
-  for(int i=0; i<drawingPoints.size(); i++){
-    cout << drawingPoints[i] << " " ;
+void Curve::render() {
+  for (int i = 0; i < drawingPoints.size(); i++) {
+    cout << drawingPoints[i] << " ";
   }
-  cout << endl ;
+  cout << endl;
 
-  Shader * shader = Shader::useShader(GLWin::COMMON_SHADER);
-  shader->setMat4("projection",*(parentCanvas->getProjection()));
-	shader->setVec4("solidColor",style->getFgColor());
+  Shader* shader = Shader::useShader(GLWin::COMMON_SHADER);
+  shader->setMat4("projection", *(parentCanvas->getProjection()));
+  shader->setVec4("solidColor", style->getFgColor());
   glBindVertexArray(vao);
   glEnableVertexAttribArray(0);
 
   glLineWidth(style->getLineWidth());
-  glDrawArrays(GL_LINES, 0, 6);
+  glDrawArrays(GL_LINE_STRIP, 0, numPoints);
 
   glDisableVertexAttribArray(0);
   glBindVertexArray(0);
-
 }
 
 // #if 0

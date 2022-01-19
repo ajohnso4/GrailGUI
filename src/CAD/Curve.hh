@@ -18,13 +18,16 @@ class Curve : public Vec3D, public Shape2D {
     Vec3D center; 
     Vec3D p, u, v;
     std::vector<float> drawingPoints;
-  
-  public:
+    uint8_t elemPerVert;
+    uint64_t numPoints;
+
+   public:
     Curve(Vec3D p1, Vec3D p2, Canvas* c, Style* s) 
       :Shape2D(c, p1.x, p1.y, s){
       this->point=p1;
       this->center=midpoint(p1,p2);
       this->radius=distance(p1,p2)/2;
+      this->elemPerVert = 3;
       this->getPoints();
     }
 

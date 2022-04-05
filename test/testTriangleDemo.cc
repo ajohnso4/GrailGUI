@@ -1,16 +1,16 @@
 #include "CAD/triangleDemo/Triangle.hh"
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include <iostream>
 
 // int main() { 
 //   helloWorld();
 // }
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -27,7 +27,6 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "{\n"
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
     "}\n\0";
-
 
 int main()
 {
@@ -108,13 +107,13 @@ int main()
     // add a new set of vertices to form a second triangle (a total of 6 vertices); the vertex attribute configuration remains the same (still one 3-float position vector per vertex)
     float vertices[] = {
         // first triangle
-        -0.9f, -0.5f, 0.5f,  // left 
-        -0.0f, -0.5f, 0.5f,  // right
+        -0.9f, -0.5f, 0.0f,  // left 
+        -0.0f, -0.5f, 0.0f,  // right
         -0.45f, 0.5f, 0.0f,  // top 
         // second triangle
          0.0f, -0.5f, 0.0f,  // left
-         0.9f, -0.5f, 0.5f,  // right
-         0.45f, 0.5f, 0.5f   // top 
+         0.9f, -0.5f, 0.0f,  // right
+         0.45f, 0.5f, 0.0f   // top 
     }; 
 
     unsigned int VBO, VAO;
@@ -177,6 +176,8 @@ int main()
     return 0;
 }
 
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)

@@ -117,7 +117,7 @@ int main()
     Prefs prefs;
     Shader::setDir(prefs.getShaderDir());
     //load before shader
-    Shader::load("CAD/abc.bin", "CAD/camera.vs", "CAD/camera.fs");
+    Shader::load("demoShaders/abc.bin", "demoShaders/camera.vs", "demoShaders/camera.fs");
     //define shader
     Shader* shader = Shader::useShader(0);
 

@@ -1,12 +1,15 @@
-#include "CAD/triangleDemo/Triangle.hh"
-
-// int main() { 
-//   helloWorld();
-// }
+#include "CAD/ShaderDemo.hh"
+#include "opengl/Shader.hh"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+// to help camera
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "util/Prefs.hh"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -14,7 +17,6 @@ void processInput(GLFWwindow *window);
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
@@ -43,7 +45,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "triangle demo", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -64,7 +66,7 @@ int main()
 
     // build and compile our shader program
     // ------------------------------------
-    // vertex shader
+    // vertex shader - transform 3d coordinates into diff 3d coordintes, allows processing on the vertex attributes
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
@@ -102,17 +104,46 @@ int main()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    
+    // camera
+    glm::vec3 cameraPos = glm::vec3(1.0f, 1.0f, 3.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); 
+    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+    //prefs object
+    Prefs prefs;
+    Shader::setDir(prefs.getShaderDir());
+    //load before shader
+    Shader::load("CAD/abc.bin", "CAD/camera.vs", "CAD/camera.fs");
+    //define shader
+    Shader* shader = Shader::useShader(0);
+
+    const float radius = 10.0f;
+    float camX = sin(glfwGetTime()) * radius;
+    float camZ = cos(glfwGetTime()) * radius;
+    glm::mat4 view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+    shader->setMat4("view", view);
+
+    // pass projection matrix to shader (as projection matrix rarely changes there's no need to do this per frame)
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+    shader->setMat4("projection", projection);
+
+
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     // add a new set of vertices to form a second triangle (a total of 6 vertices); the vertex attribute configuration remains the same (still one 3-float position vector per vertex)
     float vertices[] = {
         // first triangle
-        -0.9f, -0.5f, 0.0f,  // left 
+        -0.9f, -0.5f, 0.5f,  // left 
         -0.0f, -0.5f, 0.0f,  // right
-        -0.45f, 0.5f, 0.0f,  // top 
+        -0.45f, 0.5f, 0.5f,  // top 
         // second triangle
-         0.0f, -0.5f, 0.0f,  // left
-         0.9f, -0.5f, 0.0f,  // right
+         0.0f, -0.5f, 0.5f,  // left
+         0.9f, -0.5f, 0.5f,  // right
          0.45f, 0.5f, 0.0f   // top 
     }; 
 

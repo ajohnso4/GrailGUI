@@ -272,6 +272,7 @@ void GLWin::baseInit() {
   Shader::load("multiText.bin", "MultiTexture.vert",
                "MultiTexture.frag");  // MultiTexture for shapes
                                       //  glEnable(GL_DEBUG_OUTPUT);
+  Shader::load("CAD_SHADER.bin", "camera.vs", "camera.fs");  // CAD shader
   //  glDebugMessageCallback(messageCallback, 0);
   for (int i = 0; i < tabs.size(); ++i) {
     tabs[i]->init();

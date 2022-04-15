@@ -1,5 +1,6 @@
 #include "CAD/ShaderDemo.hh"
 #include "opengl/Shader.hh"
+#include "opengl/MultiShape3D.hh"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -107,9 +108,9 @@ int main()
     
     // camera
     glm::vec3 cameraPos = glm::vec3(1.0f, 1.0f, 3.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraTarget = glm::vec3(-0.5f, 1.0f, 0.5f);
     glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); 
+    glm::vec3 up = glm::vec3(0.5f, 1.0f, 0.5f); 
     glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
     glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
@@ -117,6 +118,7 @@ int main()
     Prefs prefs;
     Shader::setDir(prefs.getShaderDir());
     //load before shader
+    // in the shaders / demoShaders folder not in CAD
     Shader::load("demoShaders/abc.bin", "demoShaders/camera.vs", "demoShaders/camera.fs");
     //define shader
     Shader* shader = Shader::useShader(0);
@@ -124,11 +126,11 @@ int main()
     const float radius = 10.0f;
     float camX = sin(glfwGetTime()) * radius;
     float camZ = cos(glfwGetTime()) * radius;
-    glm::mat4 view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.5, 1.0, -0.5), glm::vec3(0.0, 1.0, 0.0));
     shader->setMat4("view", view);
 
     // pass projection matrix to shader (as projection matrix rarely changes there's no need to do this per frame)
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(30.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
     shader->setMat4("projection", projection);
 
@@ -136,15 +138,31 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     // add a new set of vertices to form a second triangle (a total of 6 vertices); the vertex attribute configuration remains the same (still one 3-float position vector per vertex)
+/**points = [[ 0, 0, 0], [10, 0, 0], [ 0,10, 0],
+          [ 0, 0, 0], [10, 0, 0], [ 0,10, 0],
+          [ 0,10, 0], [10, 0, 0], [ 0, 0,10],
+          [ 0, 0, 0], [ 0, 0,10], [10, 0, 0],
+          [ 0, 0, 0], [ 0,10, 0], [ 0, 0,10]];
+    polyhedron(points, [[0,1,2], [3,4,5], [6,7,8], [9,10,11], [12,13,14]]);
+    **/
     float vertices[] = {
         // first triangle
-        -0.9f, -0.5f, 0.5f,  // left 
-        -0.0f, -0.5f, 0.0f,  // right
-        -0.45f, 0.5f, 0.5f,  // top 
+        0.0f, 0.0f, 0.0f,  // center
+        1.0f, 0.0f, 0.0f,  // top
+        0.0f, 1.0f, 0.0f,  // right 
         // second triangle
-         0.0f, -0.5f, 0.5f,  // left
-         0.9f, -0.5f, 0.5f,  // right
-         0.45f, 0.5f, 0.0f   // top 
+        0.0f, 0.0f, 0.0f,  // left
+        1.0f, 0.0f, 0.0f,  // top
+        0.0f, 1.0f, 0.0f,  // right 
+        // third triangle
+        0.0f, 1.0f, 0.0f,  // center
+        1.0f, 0.0f, 0.0f,  // top
+        0.0f, 0.0f, 1.0f,  // right 
+        // fourth triangle
+        0.0f, 0.0f, 0.0f,  // left
+        0.0f, 0.0f, 1.0f,  // top
+        1.0f, 0.0f, 0.0f,  // right 
+        
     }; 
 
     unsigned int VBO, VAO;
@@ -186,7 +204,7 @@ int main()
         // draw our first triangle
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, 6); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
+        glDrawArrays(GL_LINE_LOOP, 0, 36); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
         // glBindVertexArray(0); // no need to unbind it every time 
  
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
